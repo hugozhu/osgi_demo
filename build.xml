@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="osgi_demo" default="all">
+    <!-- Uncomment the following property if no tests compilation is needed -->
+    <!--
+   <property name="skip.tests" value="true"/>
+    -->
+
+    <!-- Compiler options -->
+
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.args" value=""/>
+    <property name="compiler.max.memory" value="128m"/>
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/.pyc/**"/>
+        <exclude name="**/.pyo/**"/>
+        <exclude name="**/*.pyc/**"/>
+        <exclude name="**/*.pyo/**"/>
+        <exclude name="**/.git/**"/>
+    </patternset>
+    <patternset id="library.patterns">
+        <include name="*.zip"/>
+        <include name="*.war"/>
+        <include name="*.egg"/>
+        <include name="*.ear"/>
+        <include name="*.swc"/>
+        <include name="*.jar"/>
+    </patternset>
+    <patternset id="compiler.resources">
+        <include name="**/?*.properties"/>
+        <include name="**/?*.xml"/>
+        <include name="**/?*.gif"/>
+        <include name="**/?*.png"/>
+        <include name="**/?*.jpeg"/>
+        <include name="**/?*.jpg"/>
+        <include name="**/?*.html"/>
+        <include name="**/?*.dtd"/>
+        <include name="**/?*.tld"/>
+        <include name="**/?*.ftl"/>
+    </patternset>
+
+
+    <!-- Project Libraries -->
+
+    <path id="library.project.classpath">
+        <fileset dir="${basedir}/lib">
+            <patternset refid="library.patterns"/>
+        </fileset>
+        <fileset dir="${basedir}/build">
+            <patternset refid="library.patterns"/>
+        </fileset>
+    </path>
+
+
+    <!-- Global Libraries -->
+
+    <!-- Modules -->
+
+
+    <!-- Module osgi_demo -->
+
+    <dirname property="module.osgi_demo.basedir" file="${ant.file}"/>
+
+
+    <property name="compiler.args.osgi_demo" value="${compiler.args}"/>
+
+    <property name="osgi_demo.output.dir" value="${module.osgi_demo.basedir}/out/production/osgi_demo"/>
+    <property name="osgi_demo.testoutput.dir" value="${module.osgi_demo.basedir}/out/test/osgi_demo"/>
+
+    <path id="osgi_demo.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="osgi_demo.module.classpath">
+        <path refid="library.project.classpath"/>
+    </path>
+
+    <path id="osgi_demo.runtime.module.classpath">
+        <pathelement location="${osgi_demo.output.dir}"/>
+        <pathelement location="${osgi_demo.testoutput.dir}"/>
+        <path refid="library.project.classpath"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.osgi_demo">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.osgi_demo">
+        <patternset refid="excluded.from.module.osgi_demo"/>
+    </patternset>
+
+    <path id="osgi_demo.module.sourcepath">
+        <dirset dir="${module.osgi_demo.basedir}">
+            <include name="src"/>
+        </dirset>
+    </path>
+
+
+    <target name="compile.module.osgi_demo" depends="compile.module.osgi_demo.production,compile.module.osgi_demo.tests"
+            description="Compile module osgi_demo"/>
+
+    <target name="compile.module.osgi_demo.production" description="Compile module osgi_demo; production classes">
+        <mkdir dir="${osgi_demo.output.dir}"/>
+        <javac destdir="${osgi_demo.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+               memorymaximumsize="${compiler.max.memory}" fork="true">
+            <compilerarg line="${compiler.args.osgi_demo}"/>
+            <bootclasspath refid="osgi_demo.module.bootclasspath"/>
+            <classpath refid="osgi_demo.module.classpath"/>
+            <src refid="osgi_demo.module.sourcepath"/>
+            <patternset refid="excluded.from.compilation.osgi_demo"/>
+        </javac>
+
+        <copy todir="${osgi_demo.output.dir}">
+            <fileset dir="${module.osgi_demo.basedir}/src">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="compile.module.osgi_demo.tests" depends="compile.module.osgi_demo.production"
+            description="compile module osgi_demo; test classes" unless="skip.tests">
+    </target>
+
+    <target name="clean.module.osgi_demo" description="cleanup module">
+        <delete dir="${osgi_demo.output.dir}"/>
+        <delete dir="${osgi_demo.testoutput.dir}"/>
+        <delete dir="bundles"/>
+        <delete dir="cache"/>
+    </target>
+
+    <target name="init" description="Build initialization">
+        <!-- Perform any build initialization in this target -->
+    </target>
+
+    <target name="clean" depends="clean.module.osgi_demo" description="cleanup all"/>
+
+    <target name="all" depends="init, clean, compile.module.osgi_demo" description="build all"/>
+
+    <target name="bundles" depends="all"  description="OSGi Bundles打包">
+        <mkdir dir="bundles"/>
+        <mkdir dir="cache"/>
+        <jar destfile="bundles/helloworld_bundle1.jar"
+             basedir="out/production/osgi_demo"
+             includes="demo/example/helloworld/Activator1.class,demo/example/helloworld/Activator1.class,demo/example/helloworld/HelloWorldServiceImpl1.class"
+             manifest="src/demo/example/helloworld/MANIFEST1.MF"
+                />
+        <jar destfile="bundles/helloworld_bundle2.jar"
+             basedir="out/production/osgi_demo"
+             includes="demo/example/helloworld/HelloWorldServiceImpl2.class"
+             manifest="src/demo/example/helloworld/MANIFEST2.MF"
+                />
+       <jar destfile="bundles/helloworld_bundle_for_equinox.jar"
+             basedir="out/production/osgi_demo"
+             includes="demo/example/helloworld/service/HelloWorldService.class demo/example/helloworld/HelloWorldServiceImpl2.class"
+             manifest="src/demo/example/helloworld/MANIFEST2.MF"
+                />
+    </target>
+
+    <target name="tests" depends="bundles" description="执行所有单元测试">
+        <junit printsummary="withOutAndErr" fork="yes" haltonfailure="no"
+               failureProperty="failed"
+               showoutput="yes">
+            <classpath>
+                <pathelement location="build/junit.jar"/>
+                <path refid="osgi_demo.runtime.module.classpath"/>
+            </classpath>
+            <formatter type="plain"/>
+            <batchtest fork="yes">
+                <fileset dir="src">
+                    <include name="**/*TestCase.java"/>
+                    <exclude name="**/*AbstractTestCase.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="run" depends="bundles" description="启动嵌入在Web服务器内的OSGi Demo">
+        <java classname="demo.MainServer"  fork="true">
+            <classpath>
+                <path refid="osgi_demo.runtime.module.classpath"/>
+            </classpath>
+         </java>
+    </target>
+</project>
