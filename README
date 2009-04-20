@@ -1,0 +1,3 @@
+OSGi Demo Project
+===========================
+This project is for proving concept of how OSGi can be used in normal Java application to switch service provider without restarting container --- this feature is also called Hot Deployment.
